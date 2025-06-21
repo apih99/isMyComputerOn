@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://apih99.github.io/project%202",
+  "homepage": "https://apih99.github.io/isMyComputerOn",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
