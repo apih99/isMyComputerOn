@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Zap, 
   Terminal,
@@ -8,7 +8,12 @@ import {
   Cpu,
   Skull,
   PartyPopper,
-  Rocket
+  Rocket,
+  Wifi,
+  Database,
+  Lock,
+  Eye,
+  TrendingUp
 } from 'lucide-react';
 
 function App() {
@@ -16,8 +21,27 @@ function App() {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [showNotSure, setShowNotSure] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [logs, setLogs] = useState<string[]>([]);
+  // CHANGED: Use a ref for the container, not the end element
+  const logsContainerRef = useRef<HTMLDivElement>(null);
 
-  // Meme loading messages
+  // Fake terminal logs
+  const logMessages = [
+    "Injecting caffeine into CPU...",
+    "Bypassing mainframe (easy)...",
+    "Downloading RAM from suspicious website...",
+    "Ping: -69ms (Time Travel?)",
+    "Vibe check initiated...",
+    "Finding the funny...",
+    "Defragging the cat videos...",
+    "Optimizing meme cache...",
+    "Calculating meaning of life (42)...",
+    "Stonks only go up 📈",
+    "Turning it off and on again...",
+    "Hacking into the Gibson..."
+  ];
+
+  // Meme loading messages for hero
   const loadingMessages = [
     "Downloading more RAM...",
     "Mining Dogecoin...",
@@ -30,7 +54,7 @@ function App() {
   const [currentLoadMsg, setCurrentLoadMsg] = useState(loadingMessages[0]);
 
   useEffect(() => {
-    // Cycle through funny messages while loading
+    // Hero loading cycle
     const msgInterval = setInterval(() => {
       setCurrentLoadMsg(loadingMessages[Math.floor(Math.random() * loadingMessages.length)]);
     }, 400);
@@ -46,6 +70,29 @@ function App() {
     };
   }, []);
 
+  // Terminal log effect
+  useEffect(() => {
+    if (showDiagnostics) {
+      const interval = setInterval(() => {
+        setLogs(prev => {
+          const newLogs = [...prev, `[${new Date().toLocaleTimeString()}] ${logMessages[Math.floor(Math.random() * logMessages.length)]}`];
+          return newLogs.slice(-10); // Keep last 10 logs
+        });
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [showDiagnostics]);
+
+  // FIXED: Auto scroll ONLY the container, not the window
+  useEffect(() => {
+    if (logsContainerRef.current) {
+      logsContainerRef.current.scrollTo({
+        top: logsContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+  }, [logs]);
+
   const handleTurnOff = () => {
     setClickCount(prev => prev + 1);
     if (clickCount > 2) {
@@ -54,39 +101,18 @@ function App() {
   };
 
   const diagnosticsData = [
-    { label: 'Vibe Check', value: 'PASSED ✅', status: 'success' },
-    { label: 'Rizz Level', value: 'UNSPOKEN', status: 'success' },
-    { label: 'Main Character Energy', value: '100%', status: 'success' },
-    { label: 'Copium Levels', value: '0%', status: 'success' },
-    { label: 'GPU Temp', value: 'SHEESH 🔥', status: 'warning' },
-    { label: 'Bitcoins Mined', value: 'NOPE', status: 'error' },
-  ];
-
-  const testimonials = [
-    {
-      name: "Doge",
-      role: "CEO of Wow",
-      content: "Much power. Very on. Such electricity. Wow.",
-      rating: 5
-    },
-    {
-      name: "Gigachad",
-      role: "Average Enjoyer",
-      content: "Yes, I check if my computer is on every morning. How could you tell?",
-      rating: 5
-    },
-    {
-      name: "Deleted User",
-      role: "Ohio Resident",
-      content: "Wait, you guys have computers?",
-      rating: 1
-    }
+    { label: 'Internet Speed', value: 'FASTER THAN LIGHT', icon: Wifi, color: 'text-blue-400' },
+    { label: 'Packet Loss', value: '0% (ONLY Ws)', icon: Database, color: 'text-green-400' },
+    { label: 'Encryption', value: 'NSA PROOF', icon: Lock, color: 'text-yellow-400' },
+    { label: 'FBI Agent', value: 'WATCHING 👀', icon: Eye, color: 'text-red-400' },
+    { label: 'GPU Temp', value: 'SPICY 🌶️', icon: Flame, color: 'text-orange-500' },
+    { label: 'Rizz', value: 'UNSPOKEN', icon: Ghost, color: 'text-purple-400' },
   ];
 
   return (
     <div className="min-h-screen bg-black text-white font-meme overflow-x-hidden selection:bg-pink-500 selection:text-white">
       {/* Navigation */}
-      <nav className="bg-zinc-900 border-b-4 border-pink-500">
+      <nav className="bg-zinc-900 border-b-4 border-pink-500 relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-2 animate-bounce">
@@ -105,8 +131,7 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background chaos */}
+      <div className="relative overflow-hidden z-10">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')] opacity-10"></div>
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-600 rounded-full blur-[100px] opacity-30 animate-pulse"></div>
         <div className="absolute top-40 -left-20 w-72 h-72 bg-yellow-500 rounded-full blur-[100px] opacity-20"></div>
@@ -176,83 +201,127 @@ function App() {
       </div>
 
       {/* Marquee/Stats Bar */}
-      <div className="bg-yellow-400 py-4 overflow-hidden transform -skew-y-2 border-y-4 border-black mb-16">
+      <div className="bg-yellow-400 py-4 overflow-hidden transform -skew-y-2 border-y-4 border-black mb-16 relative z-10">
         <div className="flex space-x-12 animate-marquee whitespace-nowrap text-black font-black text-xl">
           <span>🔋 UPTIME: FOREVER</span>
           <span>⚡ POWER: OVER 9000</span>
           <span>🛑 ERRORS: ZERO (TRUST ME)</span>
           <span>💻 RGB: MAXIMUM</span>
           <span>🚀 TO THE MOON</span>
+          <span>💎 DIAMOND HANDS</span>
           <span>🔋 UPTIME: FOREVER</span>
           <span>⚡ POWER: OVER 9000</span>
-          <span>🛑 ERRORS: ZERO (TRUST ME)</span>
         </div>
       </div>
 
       {/* Diagnostics Panel */}
       {showDiagnostics && (
-        <div id="diagnostics" className="py-16 relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-black text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+        <div id="diagnostics" className="py-20 relative bg-zinc-950 overflow-hidden">
+          {/* Matrix Rain / Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <h2 className="text-5xl font-black text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 animate-glitch">
               BIG BRAIN ANALYTICS 🧠
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {diagnosticsData.map((item, index) => (
-                <div key={index} className="bg-zinc-900 border-2 border-zinc-800 rounded-2xl p-6 hover:border-pink-500 transition-colors hover:shadow-[0_0_30px_rgba(236,72,153,0.3)] group">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-zinc-400 font-mono">{item.label}</h3>
-                    {item.status === 'success' && <PartyPopper className="h-6 w-6 text-green-500 group-hover:animate-spin" />}
-                    {item.status === 'warning' && <Flame className="h-6 w-6 text-orange-500 animate-pulse" />}
-                    {item.status === 'error' && <Skull className="h-6 w-6 text-red-500 animate-bounce" />}
-                  </div>
-                  <div className="text-3xl font-black text-white">{item.value}</div>
-                  <div className="w-full bg-zinc-800 rounded-full h-4 mt-4 overflow-hidden border border-zinc-700">
-                    <div className={`h-full rounded-full w-full ${
-                      item.status === 'success' ? 'bg-green-500' : 
-                      item.status === 'warning' ? 'bg-orange-500' : 'bg-red-500'
-                    } relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_2s_infinite]"></div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              
+              {/* Left Column: Stats Cards */}
+              <div className="space-y-4">
+                {diagnosticsData.map((item, index) => (
+                  <div key={index} className="bg-black/80 backdrop-blur border border-green-500/30 p-4 rounded-lg flex items-center justify-between hover:border-green-400 transition-all group">
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-2 rounded-md bg-zinc-900 ${item.color}`}>
+                        <item.icon size={24} />
+                      </div>
+                      <span className="font-mono text-zinc-400">{item.label}</span>
                     </div>
+                    <span className="font-black text-xl font-mono">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Middle Column: The Graph */}
+              <div className="lg:col-span-2 bg-black/90 border-2 border-green-500 rounded-xl p-6 relative overflow-hidden shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                <div className="scanlines"></div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-green-400 font-mono text-xl flex items-center gap-2">
+                    <TrendingUp /> LIVE PERFORMANCE
+                  </h3>
+                  <span className="text-xs text-green-600 font-mono animate-pulse">● LIVE UPDATE</span>
+                </div>
+                
+                {/* Fake SVG Graph */}
+                <div className="h-64 w-full bg-zinc-900/50 rounded border border-green-900/50 relative p-4 flex items-end">
+                  <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
+                    <path 
+                      d="M0,50 Q20,40 40,60 T80,50 T120,30 T160,70 T200,20 T240,40 T280,10 L300,0 L300,100 L0,100 Z" 
+                      fill="rgba(34, 197, 94, 0.1)" 
+                      stroke="none" 
+                    />
+                    <path 
+                      d="M0,50 Q20,40 40,60 T80,50 T120,30 T160,70 T200,20 T240,40 T280,10" 
+                      fill="none" 
+                      stroke="#4ade80" 
+                      strokeWidth="3" 
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
+                  
+                  {/* Floating labels */}
+                  <div className="absolute top-4 right-4 text-green-400 font-black text-2xl font-mono">
+                    STONKS ↗
                   </div>
                 </div>
-              ))}
+
+                {/* Terminal Log Output */}
+                <div 
+                  ref={logsContainerRef}
+                  className="mt-4 bg-zinc-950 rounded border border-green-800 p-4 font-mono text-sm h-32 overflow-y-auto no-scrollbar"
+                >
+                  {logs.map((log, i) => (
+                    <div key={i} className="text-green-500/80 mb-1">
+                      <span className="text-green-300 mr-2">$</span>
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
       )}
 
       {/* Testimonials */}
-      <div id="testimonials" className="py-16 bg-zinc-900">
+      <div id="testimonials" className="py-16 bg-zinc-900 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-black text-center mb-12 border-b-4 border-yellow-400 inline-block mx-auto px-8 pb-2">
             THE SQUAD SPEAKS 🗣️
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-black border border-zinc-800 rounded-xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
-                <div className="flex mb-4 text-2xl">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="grayscale hover:grayscale-0 transition-all cursor-default">
-                      {i < testimonial.rating ? '⭐' : '💀'}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xl mb-6 font-medium">"{testimonial.content}"</p>
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-pink-500 to-yellow-500"></div>
-                  <div>
-                    <div className="font-bold text-lg">{testimonial.name}</div>
-                    <div className="text-sm text-zinc-500 uppercase tracking-widest">{testimonial.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <div className="bg-black border border-zinc-800 rounded-xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+               <div className="flex mb-4 text-2xl">⭐⭐⭐⭐⭐</div>
+               <p className="text-xl mb-6">"Much power. Very on. Such electricity. Wow."</p>
+               <div className="font-bold text-lg text-yellow-500">Doge (CEO of Wow)</div>
+            </div>
+            <div className="bg-black border border-zinc-800 rounded-xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+               <div className="flex mb-4 text-2xl">⭐⭐⭐⭐⭐</div>
+               <p className="text-xl mb-6">"Yes, I check if my computer is on every morning. How could you tell?"</p>
+               <div className="font-bold text-lg text-blue-500">Gigachad</div>
+            </div>
+            <div className="bg-black border border-zinc-800 rounded-xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+               <div className="flex mb-4 text-2xl">💀💀💀💀💀</div>
+               <p className="text-xl mb-6">"Wait, you guys have computers?"</p>
+               <div className="font-bold text-lg text-red-500">Deleted User</div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12 border-t border-zinc-800">
+      <footer className="bg-black text-white py-12 border-t border-zinc-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8 animate-bounce inline-block">
             <Zap className="h-12 w-12 text-yellow-400 mx-auto" />
@@ -277,13 +346,11 @@ function App() {
             >
               <span className="text-2xl">✖️</span>
             </button>
-            
             <div className="text-center">
               <div className="text-6xl mb-6 animate-shake">🤔</div>
               <h3 className="text-3xl font-black mb-4 uppercase italic">Bruh Moment</h3>
               <p className="text-lg text-zinc-300 mb-8 leading-relaxed">
-                Bestie, you are literally reading pixels on a screen right now. 
-                <br/><br/>
+                Bestie, you are literally reading pixels on a screen right now. <br/><br/>
                 <span className="bg-yellow-400 text-black px-2 font-bold">IT IS ON.</span>
               </p>
               <button
